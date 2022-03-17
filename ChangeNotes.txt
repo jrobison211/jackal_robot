@@ -1,0 +1,22 @@
+
+High Level Questions:
+
+Do we need anything in rover_robot? -- wrapper metapackage, i'm not sure      
+
+Do we need anything in rover_bringup? Is it web shit?? -- the base/bringup/description paradigm is ROS best practice --> decouples robot functionality groups for separate development 
+                                                       -- bringup packages all the external groups into a single launchfile access point 
+
+Do we need to edit or remove rover_diagnostic_updater? -- probably
+
+Do we need to edit or remove scripts/calibrate? -- probably remove
+
+
+need ROS control leveragers done first -- early stage test dependencies
+  --> bypass bringup, manual ssh launches should work
+  --> need multialtitude understanding of ROS control workflow, integration assurance
+  --> modifications to controller yamls, urdf files almost definitely necessary --> first prio in building understanding of RC is figuring out what these need to look like
+  -->  
+After roscontrol done/tested w/ serial integrations on ESP
+  --> optional buildout for bringup --> ease of operation benefits, no tangible runtime effects --> consider only if launch process is lengthy/tedious enough to warrant significant speedup in testing rounds
+  --> navigation integrations to Control --> parent launch file that spins up move_base, Zed (what else?)
+  --> testing of full stack

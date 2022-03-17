@@ -1,0 +1,57 @@
+<launch>
+  <arg name="rover_port" default="/dev/rover" />
+  <arg name="enable_ekf" default="$(optenv ENABLE_EKF true)"/>
+
+  <include file="$(find rover_description)/launch/description.launch" />
+
+  <node pkg="rover_base" type="rover_node" name="rover_node">
+    <rosparam>
+      # TODO: Specify these in code rather than here.
+      require:
+        publishers:
+          - status
+          - feedback
+          - imu/data_raw
+          - navsat/nmea_sentence
+        subscribers:
+          - cmd_drive
+          - wifi_connected
+    </rosparam>
+    <param name="port" value="$(arg rover_port)" />
+    <param name="wireless_interface" value="$(optenv ROVER_WIRELESS_INTERFACE wlp2s0)" /> <!-- do we need this? I think not -->
+  </node>
+
+  <!-- TODO: Eliminate this by compiling the necessary message definitions into rover_base. -->
+  <node pkg="rosserial_python" type="message_info_service.py" name="rosserial_message_info" />
+
+  <!-- Translate Sentence messages from the MCU to NavSatFix messages -->
+  <node pkg="nmea_navsat_driver" type="nmea_topic_driver" name="nmea_topic_driver" ns="navsat" />
+
+  <!-- Filter raw gyro data into a usable IMU message // could we use the Zed IMU with this shit??-->
+  <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter">
+    <rosparam file="$(eval optenv('ROVER_MAG_CONFIG', find('rover_base')+'/config/mag_config_default.yaml'))" />
+    <rosparam>
+      gain: 0.1
+      zeta: 0.001
+      publish_tf: false
+    </rosparam>
+  </node>
+
+  <!-- Differential controller and basic localization -->
+  <include file="$(find rover_control)/launch/control.launch" />
+
+  <!-- Teleoperation via joystick and rviz interactive markers -->
+  <include file="$(find rover_control)/launch/teleop.launch" />
+
+  <!-- Diagnostic Aggregator for robot monitor usage -->
+  <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">
+    <rosparam command="load" file="$(find rover_base)/config/diagnostic_analyzers.yaml" />
+  </node>
+
+  <!-- Add Diagnostic Analyzers for ekf localization if enabled --> 
+  <group if="$(arg enable_ekf)">
+    <node pkg="diagnostic_aggregator" type="add_analyzers" name="add_localization_analyzers">
+      <rosparam command="load" file="$(find rover_base)/config/localization_analyzers.yaml" />
+    </node>
+  </group>
+</launch>

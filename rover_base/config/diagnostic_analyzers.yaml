@@ -1,0 +1,38 @@
+analyzers:
+  rover:
+    type: diagnostic_aggregator/AnalyzerGroup
+    path: Rover Base
+    analyzers:
+      general:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: General
+        remove_prefix: 'rover_node'
+        timeout: 5.0
+        expected: [
+          'rover_node: General',
+          'rover_node: Battery',
+          'rover_node: User voltage supplies',
+          'rover_node: Current consumption',
+          'rover_node: Power consumption' ]
+      sensors:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Sensor Topics
+        remove_prefix: 'rover_node'
+        timeout: 5.0
+        expected: [
+          'rover_node: /imu/data_raw topic status',
+          'rover_node: /navsat/nmea_sentence topic status' ]
+      teleop:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Bluetooth Joystick
+        remove_prefix: 'bluetooth_teleop/joy_node'
+        timeout: 5.0
+        expected: [
+          'bluetooth_teleop/joy_node: Joystick Driver Status' ]
+      twist:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Twist Mux
+        remove_prefix: 'twist_mux'
+        timeout: 5.0
+        expected: [
+          'twist_mux: Twist mux status']
