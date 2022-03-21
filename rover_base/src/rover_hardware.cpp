@@ -72,7 +72,7 @@ void RoverHardware::copyJointsFromHardware()
   boost::mutex::scoped_lock feedback_msg_lock(feedback_msg_mutex_, boost::try_to_lock);
   if (feedback_msg_ && feedback_msg_lock)
   {
-    for (int i = 0; i < 4; i++) //should this change to a 6? why is it a 4 not a 3?
+    for (int i = 0; i < 6; i++) //changed from a 4 to a 6
     {
       joints_[i].position = feedback_msg_->drivers[i % 2].measured_travel;
       joints_[i].velocity = feedback_msg_->drivers[i % 2].measured_velocity;
@@ -91,8 +91,12 @@ void RoverHardware::publishDriveFromController()
   if (cmd_drive_pub_.trylock())
   {
     cmd_drive_pub_.msg_.mode = rover_msgs::Drive::MODE_VELOCITY;
-    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::LEFT] = joints_[0].velocity_command;
-    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::RIGHT] = joints_[1].velocity_command;
+    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::FL] = joints_[0].velocity_command;
+    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::FR] = joints_[1].velocity_command;
+    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::ML] = joints_[2].velocity_command;
+    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::MR] = joints_[3].velocity_command;
+    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::BL] = joints_[4].velocity_command;
+    cmd_drive_pub_.msg_.drivers[rover_msgs::Drive::BR] = joints_[5].velocity_command;
     cmd_drive_pub_.unlockAndPublish();
   }
 }
